@@ -1,38 +1,30 @@
 <?php
-
-require "user.php";
-require "../Services/Library.php";
+require_once "User.php";
 
 class Librarian extends User {
 
-    private $Library;
-
-    public function __construct($name,$email,$library) {
-        parent::__counstructor($name,$email);
-        $this->Library = $library;
+    public function addBook($conn, $book) {
+        $stmt = $conn->prepare("INSERT INTO books (title, author, isbn, status) VALUES (?, ?, ?, ?)");
+        $stmt->execute([$book->title, $book->author, $book->isbn, $book->status]);
     }
 
-    public function addBook($book) {
-        $this->Library->addBook($book);
+    public function removeBook($conn, $id) {
+        $stmt = $conn->prepare("DELETE FROM books WHERE id=?");
+        $stmt->execute([$id]);
     }
 
-    public function createMembre($membre) {
-        $this->Library->addMembre($membre);
+    public function updateBookStatus($conn, $id, $status) {
+        $stmt = $conn->prepare("UPDATE books SET status=? WHERE id=?");
+        $stmt->execute([$status, $id]);
     }
 
-    public function displayBooks() {
-        $this->Library->displayBooks();
+    public function registerMember($conn, $member) {
+        $stmt = $conn->prepare("INSERT INTO users (name, email, role) VALUES (?, ?, 'member')");
+        $stmt->execute([$member->name, $member->email]);
     }
 
-    public function deleteBook($bookD) {
-        $this->Library->deleteBook($bookD);
-    }
-
-    public function __toString() {
-        return parent::__toString();
+    public function viewAllBooks($conn) {
+        $stmt = $conn->query("SELECT * FROM books");
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
-$library = new Library();
-$lb1 = new Librarian("salah","tabitsalah12@gmail.com",$library);
-
-echo $lb1;
