@@ -3,51 +3,57 @@ require_once __DIR__ . '/src/config/database.php';
 require_once __DIR__ . '/src/Entities/user.php';
 require_once __DIR__ . '/src/Entities/librarian.php';
 require_once __DIR__ . '/src/Entities/book.php';
+require_once __DIR__ . '/src/Entities/membre.php';
+
 $dB = new Database();
 $conn = $dB->getConnection();
 $admin = new Librarian("Othmane Admin", "admin@bibliotech.ma");
-$vewbooks=$admin->viewAllBooks($conn);
-
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
-    // On récupère les données proprement
-    $title = $_POST['title'];
-    $author = $_POST['author'];
-    $isbn = $_POST['isbn'];
-    $status = $_POST['status'] ?? "Disponible";
-
-    // ✅ ON PASSE LES ARGUMENTS AU CONSTRUCTEUR ICI
-    $newBook = new Book($title, $author, $isbn, $status);
-
-$admin = new Librarian("Othmane Admin", "admin@bibliotech.ma");
-    
-    try {
-        $admin->addBook($conn, $newBook);
-        header("Location: dashboard-admin.php?success=1");
-        exit(); 
-    } catch (Exception $e) {
-        echo "Erreur : " . $e->getMessage();
+    if (isset($_POST['action']) && $_POST['action'] == 'register_member') {
+        $name = $_POST['name'];
+        $email = $_POST['email'];   
+        $newmember = new Member($name, $email);
+        try {
+            $admin->registerMember($conn, $newmember);
+            header("Location: dashboard-admin.php?success=member");
+            exit(); 
+        } catch (Exception $e) {
+            echo "Erreur Membre : " . $e->getMessage();
+        }
     }
-}if (isset($_GET['id'])) {
-    $id = $_GET['id'];
-    
-    $db = new Database();
-    $conn = $db->getConnection();
-    
-    // Khass t-creer l'admin bach t-khdem b les fonctions dyalo
-    $admin = new Librarian("Admin", "admin@email.com");
-    
-    try {
-        $admin->removeBook($conn, $id);
-        // Mli t-msse7, rje3 l l-dashboard
-        header("Location: dashboard-admin.php?deleted=1");
-        exit();
-    } catch (Exception $e) {
-        echo "Erreur de suppression: " . $e->getMessage();
+
+
+    if (isset($_POST['action']) && $_POST['action'] == 'add_book') {
+        $title = $_POST['title'];
+        $author = $_POST['author'];
+        $isbn = $_POST['isbn'];
+        $status = $_POST['status'] ?? "Disponible";
+
+        $newBook = new Book($title, $author, $isbn, $status);
+        try {
+            $admin->addBook($conn, $newBook);
+            header("Location: dashboard-admin.php?success=book");
+            exit(); 
+        } catch (Exception $e) {
+            echo "Erreur Livre : " . $e->getMessage();
+        }
     }
 }
 
+if (isset($_GET['action']) && $_GET['action'] == 'delete' && isset($_GET['id'])) {
+    $id_to_delete = $_GET['id'];
+    try {
+        $admin->removeBook($conn, $id_to_delete);
+        header("Location: dashboard-admin.php");
+        exit();
+    } catch (Exception $e) {
+        $error = $e->getMessage();
+    }
+}
+
+$vewbooks = $admin->viewAllBooks($conn);
 ?>
 <html lang="fr">
 <head>
@@ -92,9 +98,9 @@ $admin = new Librarian("Othmane Admin", "admin@bibliotech.ma");
         <i class="fas fa-plus mr-2"></i> Nouveau Livre
     </button>
 </a>
-                    <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg flex items-center shadow-md transition">
+                   <a href="formregistermember.php"> <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg flex items-center shadow-md transition">
                         <i class="fas fa-user-plus mr-2"></i> Nouveau Membre
-                    </button>
+                    </button></a>
                 </div>
             </header>
 
@@ -148,17 +154,11 @@ $admin = new Librarian("Othmane Admin", "admin@bibliotech.ma");
             <button class="text-amber-500 hover:text-amber-700 mr-3">
                 <i class="fas fa-tools"></i>
             </button>
-<td class="py-4 px-6">
-    <button class="text-amber-500 hover:text-amber-700 mr-3">
-        <i class="fas fa-tools"></i>
-    </button>
-    
-    <a href="remove-book.php?id=<?php echo $book['id']; ?>" 
-       onclick="return confirm('Wash tiyeq bli bghiti t-msse7 had l-ktab?')"
-       class="text-red-500 hover:text-red-700">
-        <i class="fas fa-trash"></i>
-    </a>
-</td>
+        <a href="dashboard-admin.php?action=delete&id=<?php echo $book['id']; ?>" 
+            onclick="return confirm('cette action peut supprimer votre livre')"
+          class="text-red-500 hover:text-red-700">
+       <i class="fas fa-trash"></i>
+           </a>
         </td>
     </tr>
     <?php endforeach; ?>

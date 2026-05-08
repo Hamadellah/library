@@ -13,6 +13,7 @@
 
     <form action="dashboard-admin.php" method="POST" class="space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <input type="hidden" name="action" value="add_book">
             <div class="col-span-2">
                 <label for="title" class="block text-sm font-semibold text-gray-700 mb-2">Titre de l'ouvrage</label>
                 <input type="text" id="title" name="title" required
@@ -49,7 +50,7 @@
             <button type="reset" class="px-6 py-2 text-gray-600 hover:text-gray-800 font-medium transition">
                 Réinitialiser
             </button>
-            <button type="submit" name="addliver" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition duration-200">
+            <button type="submit" name="add_book" class="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-lg font-bold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition duration-200">
                 Enregistrer le livre
             </button>
         </div>

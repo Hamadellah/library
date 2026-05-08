@@ -2,20 +2,25 @@
 require_once "User.php";
 
 class Member extends User {
+    public function __construct($name = null, $email = null) {
+        $this->name = $name;
+        $this->email = $email;
+        parent::__construct($name, $email);
+    }
 
     public function borrowBook($conn, $book_id) {
-        // vérifier disponibilité
+       
         $stmt = $conn->prepare("SELECT status FROM books WHERE id=?");
         $stmt->execute([$book_id]);
         $book = $stmt->fetch();
 
         if ($book && $book['status'] == "Disponible") {
 
-            // ajouter borrow
+            
             $stmt = $conn->prepare("INSERT INTO borrows (member_id, book_id, borrow_date) VALUES (?, ?, NOW())");
             $stmt->execute([$this->id, $book_id]);
 
-            // update status
+
             $stmt = $conn->prepare("UPDATE books SET status='Emprunté' WHERE id=?");
             $stmt->execute([$book_id]);
 
@@ -25,7 +30,7 @@ class Member extends User {
     }
 
     public function returnBook($conn, $book_id) {
-        // update borrow
+        
         $stmt = $conn->prepare("UPDATE borrows SET return_date=NOW() WHERE book_id=? AND member_id=? AND return_date IS NULL");
         $stmt->execute([$book_id, $this->id]);
 
