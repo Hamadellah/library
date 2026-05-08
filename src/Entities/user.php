@@ -9,4 +9,3 @@ class User {
         $this->email = $email;
     }
 }
-echo "user class loaded";
