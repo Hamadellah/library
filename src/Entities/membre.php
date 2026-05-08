@@ -8,33 +8,29 @@ class Member extends User {
         parent::__construct($name, $email);
     }
 
-    public function borrowBook($conn, $book_id) {
-       
-        $stmt = $conn->prepare("SELECT status FROM books WHERE id=?");
-        $stmt->execute([$book_id]);
-        $book = $stmt->fetch();
+public function borrowBook($conn, $book_id) {
+    
+    $stmt = $conn->prepare("SELECT status FROM books WHERE id = ?");
+    $stmt->execute([$book_id]);
+    $book = $stmt->fetch();
 
-        if ($book && $book['status'] == "Disponible") {
+    if ($book && $book['status'] === 'Disponible') {
+        
+        $update = $conn->prepare("UPDATE books SET status = 'Emprunté' WHERE id = ?");
+        $update->execute([$book_id]);
 
-            
-            $stmt = $conn->prepare("INSERT INTO borrows (member_id, book_id, borrow_date) VALUES (?, ?, NOW())");
-            $stmt->execute([$this->id, $book_id]);
-
-
-            $stmt = $conn->prepare("UPDATE books SET status='Emprunté' WHERE id=?");
-            $stmt->execute([$book_id]);
-
-            return true;
-        }
-        return false;
+        
+        $insert = $conn->prepare("INSERT INTO loans (user_id, book_id, loan_date) VALUES (?, ?, NOW())");
+        return $insert->execute([$this->id, $book_id]);
     }
+    return false;
+}
 
     public function returnBook($conn, $book_id) {
         
         $stmt = $conn->prepare("UPDATE borrows SET return_date=NOW() WHERE book_id=? AND member_id=? AND return_date IS NULL");
         $stmt->execute([$book_id, $this->id]);
 
-        // update status
         $stmt = $conn->prepare("UPDATE books SET status='Disponible' WHERE id=?");
         $stmt->execute([$book_id]);
 
